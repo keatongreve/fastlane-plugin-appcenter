@@ -308,12 +308,17 @@ module Fastlane
         dsym_path = nil
         if dsym
           # we can use dsym parameter only if build file is ipa
-          dsym_path = dsym if !file || File.extname(file) == '.ipa'
+          dsym_path = dsym if !file || File.extname(file) == '.ipa' || File.extname(file) == '.app'
         else
           # if dsym is note set, but build is ipa - check default path
-          if file && File.exist?(file) && File.extname(file) == '.ipa'
-            dsym_path = file.to_s.gsub('.ipa', '.dSYM.zip')
-            UI.message("dSYM is found")
+          if file && File.exist?(file)
+            if File.extname(file) == '.ipa'
+              dsym_path = file.to_s.gsub('.ipa', '.app.dSYM.zip')
+              UI.message("dSYM is found")
+            elsif File.extname(file) == '.app'
+              dsym_path = file.to_s.gsub('.app', '.app.dSYM.zip')
+              UI.message("dSYM is found")
+            end
           end
         end
 
@@ -550,8 +555,8 @@ module Fastlane
                               UI.user_error!("You can't use 'ipa' and '#{value.key}' options in one run")
                             end,
                               verify_block: proc do |value|
-                                accepted_formats = [".ipa"]
-                                UI.user_error!("Only \".ipa\" formats are allowed, you provided \"#{File.extname(value)}\"") unless accepted_formats.include? File.extname(value)
+                                accepted_formats = [".ipa", ".app"]
+                                UI.user_error!("Only \".ipa\"/\".app\" formats are allowed, you provided \"#{File.extname(value)}\"") unless accepted_formats.include? File.extname(value)
                               end),
 
           FastlaneCore::ConfigItem.new(key: :dsym,
